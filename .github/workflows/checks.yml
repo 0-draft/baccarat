@@ -1,0 +1,52 @@
+name: Checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Nothing here pushes, so the token has no reason to stay in .git.
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Tests
+        run: python -m unittest discover -s tests -v
+
+      # Pinned like the actions are: npx would otherwise run whatever version
+      # was published last, on every pull request.
+      - name: Markdown
+        run: npx --yes markdownlint-cli2@0.24.0 "**/*.md"
+
+      # The table art is committed output. An edit to the generator without a
+      # rerun leaves the table pointing at art that no longer matches it.
+      - name: The cards match their generator
+        run: |
+          python scripts/make_cards.py
+          git diff --exit-code --stat .github/cards \
+            || { echo "::error::run scripts/make_cards.py and commit .github/cards"; exit 1; }
+          test -z "$(git status --porcelain .github/cards)" \
+            || { echo "::error::scripts/make_cards.py writes files that are not committed"; exit 1; }
+
+      # The table in README.md is output too, drawn from .github/baccarat.json.
+      - name: The table matches the state it is drawn from
+        run: |
+          python -c "import sys; sys.path.insert(0, 'scripts'); import baccarat; baccarat.write_readme(baccarat.load_state())"
+          git diff --exit-code --stat README.md \
+            || { echo "::error::the BACCARAT block is stale, redraw it from .github/baccarat.json"; exit 1; }

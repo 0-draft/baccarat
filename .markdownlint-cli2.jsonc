@@ -1,0 +1,34 @@
+{
+  // Self-contained on purpose: this is a public repo, so it must not point at
+  // an absolute path in anyone's home directory.
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD024": false,
+    "MD036": false,
+    "MD041": false,
+    "MD060": false,
+    // The only raw HTML is the table between the BACCARAT:START/END markers,
+    // written by .github/workflows/baccarat.yml via scripts/baccarat.py. The
+    // cards, chips and bead plate sit inside a pre because a table puts padding
+    // and a border around every cell, and pre is the only element whose
+    // white-space survives GitHub's stripping of style.
+    "MD033": {
+      "allowed_elements": [
+        "img",
+        "pre",
+        "div",
+        "p",
+        "table",
+        "thead",
+        "tbody",
+        "tr",
+        "th",
+        "td",
+        "code",
+        "em",
+        "a"
+      ]
+    }
+  }
+}

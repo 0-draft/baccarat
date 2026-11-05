@@ -1,0 +1,16 @@
+{
+ "shoe": {
+  "seen": [],
+  "number": 1,
+  "road": []
+ },
+ "hand": 1,
+ "result": 0.0,
+ "hands_played": 0,
+ "coach": {
+  "cost": 0.0,
+  "bets": 0
+ },
+ "players": {},
+ "recent": []
+}
