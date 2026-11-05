@@ -26,16 +26,31 @@ jobs:
         env:
           TITLE: ${{ github.event.issue.title }}
           NUMBER: ${{ github.event.issue.number }}
+          AUTHOR: ${{ github.event.issue.user.login }}
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          if [[ "$TITLE" =~ ^bac\|bet\ (player|banker|tie|ppair|bpair)\ (1|2|5|10|25)\ [0-9]{1,9}$ ]]; then
-            echo "ok=true" >> "$GITHUB_OUTPUT"
-          else
+          if ! [[ "$TITLE" =~ ^bac\|bet\ (player|banker|tie|ppair|bpair)\ (1|2|5|10|25)\ [0-9]{1,9}$ ]]; then
             echo "ok=false" >> "$GITHUB_OUTPUT"
             gh issue close "$NUMBER" --comment "That is not a bet I can read. Click a chip on the table instead: https://github.com/0-draft/baccarat#baccarat"
+            exit 0
           fi
+
+          # A well-formed bet still takes a slot, so one account filling the
+          # queue with them would hold the table. Each hand takes about 30
+          # seconds to come back, and someone playing in earnest waits for it
+          # to see the next chip, so six in three minutes is room to spare. This
+          # issue is one of those counted.
+          since=$(date -u -d '-3 minutes' +%Y-%m-%dT%H:%M:%SZ)
+          recent=$(gh api "repos/$GH_REPO/issues?creator=$AUTHOR&state=all&since=$since&per_page=100" \
+            --jq "[.[] | select(.pull_request == null) | select(.created_at >= \"$since\")] | length")
+          if [ "$recent" -gt 6 ]; then
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            gh issue close "$NUMBER" --comment "That is $recent bets in three minutes. Each hand takes about 30 seconds to come back; wait for the table, then click again."
+            exit 0
+          fi
+          echo "ok=true" >> "$GITHUB_OUTPUT"
 
   play:
     needs: gate
