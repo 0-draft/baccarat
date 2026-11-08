@@ -1,5 +1,8 @@
 # Baccarat
 
+> [!WARNING]
+> **Merged into [0-draft/casino](https://github.com/0-draft/casino) on 2026-11-08, to be archived on or after 2026-12-08.** Blackjack and baccarat were the same kind of game drawn from the same card art, so they now share one repository. The table carries on with its shoe, scores and log at [0-draft/casino#baccarat](https://github.com/0-draft/casino#baccarat); the game workflow here is disabled, so the table below is frozen and its chips no longer deal.
+
 Punto banco against a shoe that lives in GitHub Actions, played by whoever turns up. Nothing to install, and no account beyond the one you already have: every bet is an issue, and the table is this file.
 
 <!-- BACCARAT:START -->
